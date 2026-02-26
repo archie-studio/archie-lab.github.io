@@ -2,61 +2,102 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>定期定額複利計算機 - 阿奇專業版</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
     <style>
         :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f8f9fa; --table-header: #34495e; }
-        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 1050px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 10px; margin: 0; }
         
+        .container { max-width: 1050px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
+        
+        /* 標題區 */
         .header-container { text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
-        h2 { display: inline; color: var(--primary); margin: 0; }
-        .author-tag { font-size: 0.6em; color: #7f8c8d; font-weight: normal; margin-left: 10px; vertical-align: bottom; }
+        h2 { display: block; color: var(--primary); margin: 0; font-size: 1.4rem; line-height: 1.4; }
+        .author-tag { font-size: 0.8rem; color: #7f8c8d; font-weight: normal; margin-top: 5px; display: block; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        /* Tooltip 提示圖示 */
+        .info-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 14px; height: 14px; background: #bdc3c7; color: white;
+            border-radius: 50%; font-size: 10px; cursor: help; margin-left: 4px;
+            position: relative; vertical-align: middle;
+        }
+        .info-icon:hover::after {
+            content: attr(data-title);
+            position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 8px 12px; border-radius: 6px;
+            font-size: 12px; white-space: normal; z-index: 100; width: 200px; line-height: 1.4; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 輸入區網格 */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 15px; }
+        .input-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.85em; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
+        /* 質押切換開關 */
         .loan-toggle-container {
-            background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px;
+            background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0;
             display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2;
         }
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        #loanSettings { display: none; background: #fafafa; padding: 20px; border-radius: 10px; border: 1px dashed var(--accent); margin-top: 10px; }
+        #loanSettings { display: none; background: #fafafa; padding: 15px; border-radius: 10px; border: 1px dashed var(--accent); margin-top: 10px; }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        button { flex: 2; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        /* 核心規則備註 */
+        .rule-note {
+            background: #fdfdfd; border-left: 4px solid #bdc3c7; padding: 15px; margin: 20px 0;
+            font-size: 0.82em; color: #666; line-height: 1.6;
+        }
+        .rule-title { font-weight: bold; color: #34495e; margin-bottom: 5px; display: block; }
+
+        /* 按鈕區 */
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-calc { background: var(--secondary); color: white; }
         .btn-calc:hover { background: #219150; }
-        .btn-export { background: #3498db; color: white; flex: 1; display: none; }
+        .btn-export { background: #3498db; color: white; display: none; }
         
+        /* 結果顯示區 */
         .result { margin-top: 30px; display: none; border-top: 2px dashed #eee; padding-top: 20px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .res-box { padding: 20px; background: white; border-radius: 12px; text-align: center; border: 2px solid #eef2f7; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .res-label { font-size: 0.9em; color: #7f8c8d; margin-bottom: 8px; font-weight: bold; }
-        .res-value { font-size: 1.4em; font-weight: 900; }
+        .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .res-box { padding: 15px; background: white; border-radius: 12px; text-align: center; border: 1px solid #eef2f7; }
+        .res-label { font-size: 0.75em; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
+        .res-value { font-size: 1.1em; font-weight: 900; word-break: break-all; }
         
-        .view-mode-selector { margin-bottom: 15px; text-align: right; }
-        .view-mode-selector select { width: auto; min-width: 140px; background: #eef2f7; border: none; font-weight: bold; padding: 5px; border-radius: 5px;}
+        .view-mode-selector { margin-bottom: 15px; text-align: center; }
+        .view-mode-selector select { width: auto; min-width: 140px; background: #eef2f7; border: none; font-weight: bold; padding: 8px; border-radius: 5px; }
 
-        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
-        .table-wrapper { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 800px; }
-        thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; border-right: 1px solid #4a627a; }
+        .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 30px; }
+        
+        /* 表格區 */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 650px; }
+        thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; }
         td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
         tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
         .col-net { color: #e74c3c; font-weight: bold; }
+
+        /* RWD 調整 */
+        @media (min-width: 768px) {
+            .btn-group { flex-direction: row; }
+            h2 { font-size: 1.8rem; display: inline; }
+            .author-tag { display: inline; margin-left: 10px; }
+            .summary-grid { grid-template-columns: repeat(4, 1fr); }
+            .res-value { font-size: 1.3em; }
+            .chart-container { height: 450px; }
+            body { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -64,7 +105,7 @@
 <div class="container">
     <div class="header-container">
         <h2>📈 定期定額複利計算機（含質押槓桿功能）</h2>
-        <span class="author-tag">made by 阿奇 ver.2 2026</span>
+        <span class="author-tag">made by 阿奇 ver.2.6 2026</span>
     </div>
     
     <div class="grid">
@@ -72,13 +113,17 @@
         <div class="input-group"><label>初始本金 (元)</label><input type="number" id="initPrincipal" value="1000000"></div>
         <div class="input-group"><label>每月投資 (元)</label><input type="number" id="monthlyInvest" value="20000"></div>
         <div class="input-group"><label>投資期數 (年)</label><input type="number" id="periodValue" value="10" onchange="updateYearlyInputs()"></div>
-        <div class="input-group"><label>年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
+        <div class="input-group">
+            <label>複利模式<span class="info-icon" data-title="月複利：資產每月成長一次。年複利：資產每年成長一次，估算較保守。">i</span></label>
+            <select id="compoundFreq"><option value="month">月複利</option><option value="year">年複利</option></select>
+        </div>
+        <div class="input-group"><label>預期年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
     </div>
 
     <div class="loan-toggle-container">
         <div>
             <strong style="color: #d35400;">🚀 啟用質押槓桿功能</strong>
-            <div style="font-size: 0.75em; color: #7f8c8d;">開啟後將自動計算每年初增貸再投入</div>
+            <div style="font-size: 0.75em; color: #7f8c8d;">開啟後將自動計算增貸再投入</div>
         </div>
         <label class="switch">
             <input type="checkbox" id="enableLoan" onchange="toggleLoanSettings()">
@@ -89,31 +134,55 @@
     <div id="loanSettings">
         <div class="grid">
             <div class="input-group"><label>質借年利率 (%)</label><input type="number" id="loanRate" value="2.5" step="0.1"></div>
-            <div class="input-group"><label>預扣一年利息？</label><select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select></div>
-            <div class="input-group"><label>維持率模式</label><select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select></div>
+            <div class="input-group">
+                <label>增貸檢視頻率<span class="info-icon" data-title="每年初：每年檢視一次維持率。每個月：每月檢視，將水位運用到極致。">i</span></label>
+                <select id="loanFrequency"><option value="year">每年初</option><option value="month">每個月</option></select>
+            </div>
+            <div class="input-group">
+                <label>預扣一年利息？<span class="info-icon" data-title="若選是，增貸資金會先扣除一年份的利息錢，剩餘資金才投入股市。">i</span></label>
+                <select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select>
+            </div>
         </div>
-        <div id="singleRatioInput"><label>目標維持率 (%)</label><input type="number" id="mainRate" value="250"></div>
-        <div id="yearlyRatioInputs" style="display:none;"><label>分年維持率設定 (%)</label><div id="yearlyInputContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 5px;"></div></div>
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="input-group">
+                <label>維持率模式<span class="info-icon" data-title="統一：所有年份固定。分年：可手動設定每一年份。">i</span></label>
+                <select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select>
+            </div>
+            <div id="singleRatioInput" class="input-group">
+                <label>目標維持率 (%)</label>
+                <input type="number" id="mainRate" value="250">
+            </div>
+        </div>
+        <div id="yearlyRatioInputs" style="display:none;"><label>分年維持率設定 (%)</label><div id="yearlyInputContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 5px;"></div></div>
+    </div>
+
+    <div class="rule-note">
+        <span class="rule-title">⚙️ 試算核心規則：</span>
+        <ul>
+            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入原標的持續擔保。</li>
+            <li><b>水位累積：</b>每月定期定額投入之股票，自動納入總市值計算增貸空間。</li>
+            <li><b>曲線觀察：</b>藍線(市值)與灰線(債務)之間的距離即為你的淨資產(紅虛線)。</li>
+            <li><b>風險提示：</b>本表僅模擬成長軌跡，未考量行情重挫需補繳保證金之風險。</li>
+        </ul>
     </div>
 
     <div class="btn-group">
-        <button class="btn-calc" onclick="calculate()">資產計算(含成長曲線)</button>
-        <button id="btnExport" class="btn-export" onclick="exportToExcel()">匯出 Excel</button>
+        <button class="btn-calc" onclick="calculate()">開始試算</button>
+        <button id="btnExport" class="btn-export" onclick="exportToExcel()">匯出專業美化版 Excel</button>
     </div>
 
     <div id="resultBox" class="result">
         <div class="summary-grid">
-            <div class="res-box"><div class="res-label">最終總市值 (含槓桿)</div><div class="res-value" id="resTotal" style="color:#2980b9;">$0</div></div>
-            <div class="res-box"><div class="res-label">累積總債務</div><div class="res-value" id="resLoan" style="color:#c0392b;">$0</div></div>
-            <div class="res-box" style="background: #fff5f5; border-color: #feb2b2;"><div class="res-label">最終淨資產 (淨值)</div><div class="res-value" id="resNet" style="color:#e74c3c;">$0</div></div>
-            <div class="res-box" style="background: #f8f9fa;"><div class="res-label">自提本金總額</div><div class="res-value" id="resSelf" style="color:#7f8c8d;">$0</div></div>
+            <div class="res-box"><div class="res-label">最終總市值</div><div class="res-value" id="resTotal" style="color:#2980b9;">$0</div></div>
+            <div class="res-box"><div class="res-label">累積總債務</div><div class="res-value" id="resLoan" style="color:#7f8c8d;">$0</div></div>
+            <div class="res-box" style="background: #fff5f5;"><div class="res-label">最終淨資產</div><div class="res-value" id="resNet" style="color:#e74c3c;">$0</div></div>
+            <div class="res-box"><div class="res-label">自提本金</div><div class="res-value" id="resSelf" style="color:#2c3e50;">$0</div></div>
         </div>
 
         <div class="view-mode-selector">
-            <label style="display:inline; margin-right:10px; font-size:0.9em;">報表模式：</label>
             <select id="viewMode" onchange="renderTable()">
                 <option value="month">詳細月報表</option>
-                <option value="year">年份年報表</option>
+                <option value="year" selected>年份年報表</option>
             </select>
         </div>
 
@@ -123,12 +192,12 @@
             <table id="dataTable">
                 <thead>
                     <tr>
-                        <th id="timeColTitle">時間</th>
+                        <th>時間</th>
                         <th>增貸</th>
                         <th>累積債務</th>
                         <th>月底市值</th>
                         <th>預估淨資產</th>
-                        <th>目前維持率</th>
+                        <th>維持率</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -138,8 +207,213 @@
 </div>
 
 <script>
-// JavaScript 邏輯部分與 Ver.2 相同，此處略過以節省篇幅，請延用上一版的 JS 代碼
-// (請確保複製上一版完整的 <script> 內容到這裡)
+let myChart = null;
+let fullDataRaw = [];
+
+function toggleLoanSettings() {
+    const isEnabled = document.getElementById('enableLoan').checked;
+    document.getElementById('loanSettings').style.display = isEnabled ? 'block' : 'none';
+    if(isEnabled) updateYearlyInputs();
+}
+
+function toggleRatioMode() {
+    const mode = document.getElementById('ratioMode').value;
+    document.getElementById('singleRatioInput').style.display = (mode === 'single') ? 'block' : 'none';
+    document.getElementById('yearlyRatioInputs').style.display = (mode === 'yearly') ? 'block' : 'none';
+}
+
+function updateYearlyInputs() {
+    const years = parseInt(document.getElementById('periodValue').value) || 0;
+    const container = document.getElementById('yearlyInputContainer');
+    container.innerHTML = "";
+    for (let i = 1; i <= years; i++) {
+        container.innerHTML += `<div style="font-size:0.75rem;">第${i}年:<input type="number" class="y-rate" value="250" style="width:50px;padding:3px;font-size:12px;">%</div>`;
+    }
+}
+
+function calculate() {
+    const startVal = document.getElementById('startDate').value;
+    const startYear = parseInt(startVal.split('-')[0]);
+    const startMonth = parseInt(startVal.split('-')[1]);
+    let principal = parseFloat(document.getElementById('initPrincipal').value) || 0;
+    let monthly = parseFloat(document.getElementById('monthlyInvest').value) || 0;
+    let years = parseInt(document.getElementById('periodValue').value) || 0;
+    let annualReturn = parseFloat(document.getElementById('returnRate').value) / 100;
+    const compoundFreq = document.getElementById('compoundFreq').value;
+    const isLoanEnabled = document.getElementById('enableLoan').checked;
+    const loanFreq = document.getElementById('loanFrequency').value;
+    const ratioMode = document.getElementById('ratioMode').value;
+    const bankRate = parseFloat(document.getElementById('loanRate').value) / 100;
+    const isDeduct = document.getElementById('deductInterest').value === 'yes';
+
+    let yearlyRatios = [];
+    if (ratioMode === 'yearly') {
+        document.querySelectorAll('.y-rate').forEach(input => yearlyRatios.push(parseFloat(input.value) / 100));
+    } else {
+        let r = parseFloat(document.getElementById('mainRate').value) / 100;
+        for(let i=0; i<years; i++) yearlyRatios.push(r);
+    }
+
+    let currentAssets = principal;
+    let totalLoan = 0;
+    fullDataRaw = [];
+
+    for (let m = 0; m < years * 12; m++) {
+        let yearIdx = Math.floor(m / 12);
+        let targetRatio = yearlyRatios[yearIdx] || yearlyRatios[yearlyRatios.length-1];
+        let newLoan = 0;
+
+        // 增貸觸發邏輯
+        let isCheckTime = (loanFreq === 'year') ? (m % 12 === 0) : true;
+        if (isLoanEnabled && isCheckTime) {
+            let maxLoan = currentAssets / targetRatio;
+            newLoan = Math.max(0, maxLoan - totalLoan);
+            if (newLoan > 0) {
+                let invest = newLoan;
+                if (isDeduct) invest -= (newLoan * bankRate);
+                currentAssets += invest;
+                totalLoan += newLoan;
+            }
+        }
+
+        // 資產增值邏輯
+        currentAssets += monthly;
+        if (compoundFreq === 'month') {
+            currentAssets *= (1 + (annualReturn / 12));
+        } else if (compoundFreq === 'year' && (m + 1) % 12 === 0) {
+            currentAssets *= (1 + annualReturn);
+        }
+
+        let d = new Date(startYear, startMonth - 1 + m);
+        fullDataRaw.push({
+            monthIndex: m,
+            actualYear: d.getFullYear(),
+            dateLabel: `${d.getFullYear()}/${d.getMonth()+1}`,
+            newLoan: Math.round(newLoan),
+            totalLoan: Math.round(totalLoan),
+            currentAssets: Math.round(currentAssets),
+            currentNet: Math.round(currentAssets - totalLoan),
+            ratioText: totalLoan > 0 ? (currentAssets/totalLoan*100).toFixed(0)+'%' : '-',
+            isYearPoint: (m % 12 === 0)
+        });
+    }
+
+    document.getElementById('resultBox').style.display = 'block';
+    document.getElementById('btnExport').style.display = 'inline-block';
+    document.getElementById('resTotal').innerText = "$" + Math.round(currentAssets).toLocaleString();
+    document.getElementById('resLoan').innerText = "$" + Math.round(totalLoan).toLocaleString();
+    document.getElementById('resNet').innerText = "$" + Math.round(currentAssets - totalLoan).toLocaleString();
+    document.getElementById('resSelf').innerText = "$" + Math.round(principal + (monthly * years * 12)).toLocaleString();
+    
+    renderTable();
+    updateChart();
+}
+
+function renderTable() {
+    const mode = document.getElementById('viewMode').value;
+    const tableBody = document.getElementById('tableBody');
+    let html = "";
+    
+    if (mode === 'year') {
+        const yearlyData = fullDataRaw.filter((item, idx) => {
+            const nextItem = fullDataRaw[idx + 1];
+            return !nextItem || nextItem.actualYear !== item.actualYear;
+        });
+        yearlyData.forEach(item => {
+            const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
+            html += `<tr>
+                <td>${item.actualYear}年</td>
+                <td>$${yearLoans.toLocaleString()}</td>
+                <td>$${item.totalLoan.toLocaleString()}</td>
+                <td>$${item.currentAssets.toLocaleString()}</td>
+                <td class="col-net">$${item.currentNet.toLocaleString()}</td>
+                <td>${item.ratioText}</td>
+            </tr>`;
+        });
+    } else {
+        fullDataRaw.forEach(item => {
+            html += `<tr class="${item.isYearPoint ? 'highlight-year' : ''}">
+                <td>${item.dateLabel}</td>
+                <td>${item.newLoan > 0 ? '$'+item.newLoan.toLocaleString() : '-'}</td>
+                <td>$${item.totalLoan.toLocaleString()}</td>
+                <td>$${item.currentAssets.toLocaleString()}</td>
+                <td class="col-net">$${item.currentNet.toLocaleString()}</td>
+                <td>${item.ratioText}</td>
+            </tr>`;
+        });
+    }
+    tableBody.innerHTML = html;
+}
+
+function updateChart() {
+    const labels = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.dateLabel);
+    const assetData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.currentAssets);
+    const netData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.currentNet);
+    const loanData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.totalLoan);
+
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    if (myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: '總市值', data: assetData, borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', fill: true, tension: 0.3 },
+                { label: '淨資產', data: netData, borderColor: '#e74c3c', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3 },
+                { label: '累積債務', data: loanData, borderColor: '#95a5a6', backgroundColor: 'rgba(149, 165, 166, 0.1)', fill: true, tension: 0.2 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } }
+        }
+    });
+}
+
+function exportToExcel() {
+    if (fullDataRaw.length === 0) return;
+    const mode = document.getElementById('viewMode').value;
+    const today = new Date().toLocaleString();
+    
+    // 建立結構化美化資料
+    let exportData = [
+        ["阿奇專業質押試算報表 (Ver 2.6)"],
+        [`製表時間：${today}`],
+        ["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],
+        [], // 空行
+        ["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]
+    ];
+
+    if(mode === 'year') {
+        const yearlyData = fullDataRaw.filter((item, idx) => {
+            const nextItem = fullDataRaw[idx + 1];
+            return !nextItem || nextItem.actualYear !== item.actualYear;
+        });
+        yearlyData.forEach(item => {
+            const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
+            exportData.push([item.actualYear + "年", yearLoans, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]);
+        });
+    } else {
+        fullDataRaw.forEach(item => {
+            exportData.push([item.dateLabel, item.newLoan, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]);
+        });
+    }
+
+    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+
+    // 設定欄寬美化
+    worksheet['!cols'] = [{wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 12}];
+
+    // 儲存格合併（標題區）
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "試算結果");
+    XLSX.writeFile(workbook, `阿奇質押試算_${mode==='year'?'年報':'月報'}.xlsx`);
+}
 </script>
+
 </body>
 </html>
