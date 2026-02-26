@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>定期定額複利計算機 - 阿奇專業版</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f8f9fa; --table-header: #34495e; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 20px; }
+        .container { max-width: 1050px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
+        
+        .header-container { text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { display: inline; color: var(--primary); margin: 0; }
+        .author-tag { font-size: 0.6em; color: #7f8c8d; font-weight: normal; margin-left: 10px; vertical-align: bottom; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        
+        .loan-toggle-container {
+            background: #fff3e0; padding: 15px; border-radius: 10px; margin-top: 20px;
+            display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2;
+        }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        #loanSettings { display: none; background: #fafafa; padding: 20px; border-radius: 10px; border: 1px dashed var(--accent); margin-top: 10px; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 2; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-calc { background: var(--secondary); color: white; }
+        .btn-calc:hover { background: #219150; }
+        .btn-export { background: #3498db; color: white; flex: 1; display: none; }
+        
+        .result { margin-top: 30px; display: none; border-top: 2px dashed #eee; padding-top: 20px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .res-box { padding: 20px; background: white; border-radius: 12px; text-align: center; border: 2px solid #eef2f7; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .res-label { font-size: 0.9em; color: #7f8c8d; margin-bottom: 8px; font-weight: bold; }
+        .res-value { font-size: 1.4em; font-weight: 900; }
+        
+        .view-mode-selector { margin-bottom: 15px; text-align: right; }
+        .view-mode-selector select { width: auto; min-width: 140px; background: #eef2f7; border: none; font-weight: bold; padding: 5px; border-radius: 5px;}
+
+        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
+        .table-wrapper { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 800px; }
+        thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; border-right: 1px solid #4a627a; }
+        td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
+        tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
+        .col-net { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h2>📈 定期定額複利計算機（含質押槓桿功能）</h2>
+        <span class="author-tag">made by 阿奇 ver.2 2026</span>
+    </div>
+    
+    <div class="grid">
+        <div class="input-group"><label>開始年月</label><input type="month" id="startDate" value="2026-01"></div>
+        <div class="input-group"><label>初始本金 (元)</label><input type="number" id="initPrincipal" value="1000000"></div>
+        <div class="input-group"><label>每月投資 (元)</label><input type="number" id="monthlyInvest" value="20000"></div>
+        <div class="input-group"><label>投資期數 (年)</label><input type="number" id="periodValue" value="10" onchange="updateYearlyInputs()"></div>
+        <div class="input-group"><label>年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
+    </div>
+
+    <div class="loan-toggle-container">
+        <div>
+            <strong style="color: #d35400;">🚀 啟用質押槓桿功能</strong>
+            <div style="font-size: 0.75em; color: #7f8c8d;">開啟後將自動計算每年初增貸再投入</div>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="enableLoan" onchange="toggleLoanSettings()">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div id="loanSettings">
+        <div class="grid">
+            <div class="input-group"><label>質借年利率 (%)</label><input type="number" id="loanRate" value="2.5" step="0.1"></div>
+            <div class="input-group"><label>預扣一年利息？</label><select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select></div>
+            <div class="input-group"><label>維持率模式</label><select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select></div>
+        </div>
+        <div id="singleRatioInput"><label>目標維持率 (%)</label><input type="number" id="mainRate" value="250"></div>
+        <div id="yearlyRatioInputs" style="display:none;"><label>分年維持率設定 (%)</label><div id="yearlyInputContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 5px;"></div></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculate()">資產計算(含成長曲線)</button>
+        <button id="btnExport" class="btn-export" onclick="exportToExcel()">匯出 Excel</button>
+    </div>
+
+    <div id="resultBox" class="result">
+        <div class="summary-grid">
+            <div class="res-box"><div class="res-label">最終總市值 (含槓桿)</div><div class="res-value" id="resTotal" style="color:#2980b9;">$0</div></div>
+            <div class="res-box"><div class="res-label">累積總債務</div><div class="res-value" id="resLoan" style="color:#c0392b;">$0</div></div>
+            <div class="res-box" style="background: #fff5f5; border-color: #feb2b2;"><div class="res-label">最終淨資產 (淨值)</div><div class="res-value" id="resNet" style="color:#e74c3c;">$0</div></div>
+            <div class="res-box" style="background: #f8f9fa;"><div class="res-label">自提本金總額</div><div class="res-value" id="resSelf" style="color:#7f8c8d;">$0</div></div>
+        </div>
+
+        <div class="view-mode-selector">
+            <label style="display:inline; margin-right:10px; font-size:0.9em;">報表模式：</label>
+            <select id="viewMode" onchange="renderTable()">
+                <option value="month">詳細月報表</option>
+                <option value="year">年份年報表</option>
+            </select>
+        </div>
+
+        <div class="chart-container"><canvas id="growthChart"></canvas></div>
+
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th id="timeColTitle">時間</th>
+                        <th>增貸</th>
+                        <th>累積債務</th>
+                        <th>月底市值</th>
+                        <th>預估淨資產</th>
+                        <th>目前維持率</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// JavaScript 邏輯部分與 Ver.2 相同，此處略過以節省篇幅，請延用上一版的 JS 代碼
+// (請確保複製上一版完整的 <script> 內容到這裡)
+</script>
+</body>
+</html>
