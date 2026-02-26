@@ -105,7 +105,7 @@
 <div class="container">
     <div class="header-container">
         <h2>📈 定期定額複利計算機（含質押槓桿功能）</h2>
-        <span class="author-tag">made by 阿奇 ver.2.6 2026</span>
+        <span class="author-tag">made by 阿奇 ver.2.7 2026</span>
     </div>
     
     <div class="grid">
@@ -159,10 +159,10 @@
     <div class="rule-note">
         <span class="rule-title">⚙️ 試算核心規則：</span>
         <ul>
-            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入原標的持續擔保。</li>
-            <li><b>水位累積：</b>每月定期定額投入之股票，自動納入總市值計算增貸空間。</li>
-            <li><b>曲線觀察：</b>藍線(市值)與灰線(債務)之間的距離即為你的淨資產(紅虛線)。</li>
-            <li><b>風險提示：</b>本表僅模擬成長軌跡，未考量行情重挫需補繳保證金之風險。</li>
+            <li><b>複利模式：</b>根據選擇採月複利或年複利滾動資產價值。</li>
+            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入。</li>
+            <li><b>曲線觀察：</b>藍線(市值)與灰線(債務)之間的距離即為淨資產。</li>
+            <li><b>手機下載：</b>若無法下載 Excel，請點擊 Line 右下角選「使用瀏覽器開啟」。</li>
         </ul>
     </div>
 
@@ -263,7 +263,6 @@ function calculate() {
         let targetRatio = yearlyRatios[yearIdx] || yearlyRatios[yearlyRatios.length-1];
         let newLoan = 0;
 
-        // 增貸觸發邏輯
         let isCheckTime = (loanFreq === 'year') ? (m % 12 === 0) : true;
         if (isLoanEnabled && isCheckTime) {
             let maxLoan = currentAssets / targetRatio;
@@ -276,7 +275,6 @@ function calculate() {
             }
         }
 
-        // 資產增值邏輯
         currentAssets += monthly;
         if (compoundFreq === 'month') {
             currentAssets *= (1 + (annualReturn / 12));
@@ -372,17 +370,20 @@ function updateChart() {
     });
 }
 
+// 手機下載優化版匯出函式
 function exportToExcel() {
-    if (fullDataRaw.length === 0) return;
+    if (fullDataRaw.length === 0) {
+        alert("請先進行試算再匯出資料。");
+        return;
+    }
     const mode = document.getElementById('viewMode').value;
     const today = new Date().toLocaleString();
     
-    // 建立結構化美化資料
     let exportData = [
-        ["阿奇專業質押試算報表 (Ver 2.6)"],
+        ["阿奇專業質押試算報表 (Ver 2.7)"],
         [`製表時間：${today}`],
         ["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],
-        [], // 空行
+        [], 
         ["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]
     ];
 
@@ -402,16 +403,27 @@ function exportToExcel() {
     }
 
     const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-
-    // 設定欄寬美化
     worksheet['!cols'] = [{wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 12}];
-
-    // 儲存格合併（標題區）
     worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "試算結果");
-    XLSX.writeFile(workbook, `阿奇質押試算_${mode==='year'?'年報':'月報'}.xlsx`);
+    
+    // 改用 Blob 方式下載，增加手機端相容性
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `阿奇質押試算_${mode==='year'?'年報':'月報'}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    }, 100);
 }
 </script>
 
