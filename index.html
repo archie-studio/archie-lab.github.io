@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>定期定額複利計算機 - 阿奇專業版</title>
+    
+    <meta name="google-site-verification" content="5sLwJCW8YIQ1VQsBvZQwDU4FYdYbyYALeZcrReV4FX4" />
+
+    <title>定期定額複利計算機 - 阿奇專業版 | 股票質押維持率試算</title>
+    <meta name="description" content="阿奇開發的專業投資工具：支援定期定額複利、股票質押槓桿模擬、維持率預警及 Excel 報表匯出。亦無摩擦成本，助你科學規劃財務槓桿。">
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,92 +17,46 @@
     <style>
         :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f8f9fa; --table-header: #34495e; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 10px; margin: 0; }
-        
         .container { max-width: 1050px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
-        
-        /* 標題區 */
         .header-container { text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
         h2 { display: block; color: var(--primary); margin: 0; font-size: 1.4rem; line-height: 1.4; }
         .author-tag { font-size: 0.8rem; color: #7f8c8d; font-weight: normal; margin-top: 5px; display: block; }
-        
-        /* Tooltip 提示圖示 */
-        .info-icon {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 14px; height: 14px; background: #bdc3c7; color: white;
-            border-radius: 50%; font-size: 10px; cursor: help; margin-left: 4px;
-            position: relative; vertical-align: middle;
-        }
-        .info-icon:hover::after {
-            content: attr(data-title);
-            position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
-            background: #333; color: #fff; padding: 8px 12px; border-radius: 6px;
-            font-size: 12px; white-space: normal; z-index: 100; width: 200px; line-height: 1.4; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        /* 輸入區網格 */
+        .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: #bdc3c7; color: white; border-radius: 50%; font-size: 10px; cursor: help; margin-left: 4px; position: relative; vertical-align: middle; }
+        .info-icon:hover::after { content: attr(data-title); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: normal; z-index: 100; width: 200px; line-height: 1.4; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 15px; }
         .input-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.85em; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        
-        /* 質押切換開關 */
-        .loan-toggle-container {
-            background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0;
-            display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2;
-        }
+        .loan-toggle-container { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(26px); }
-
         #loanSettings { display: none; background: #fafafa; padding: 15px; border-radius: 10px; border: 1px dashed var(--accent); margin-top: 10px; }
-
-        /* 核心規則備註 */
-        .rule-note {
-            background: #fdfdfd; border-left: 4px solid #bdc3c7; padding: 15px; margin: 20px 0;
-            font-size: 0.82em; color: #666; line-height: 1.6;
-        }
+        .rule-note { background: #fdfdfd; border-left: 4px solid #bdc3c7; padding: 15px; margin: 20px 0; font-size: 0.82em; color: #666; line-height: 1.6; }
         .rule-title { font-weight: bold; color: #34495e; margin-bottom: 5px; display: block; }
-
-        /* 按鈕區 */
         .btn-group { display: flex; flex-direction: column; gap: 10px; }
         button { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-calc { background: var(--secondary); color: white; }
         .btn-calc:hover { background: #219150; }
         .btn-export { background: #3498db; color: white; display: none; }
-        
-        /* 結果顯示區 */
         .result { margin-top: 30px; display: none; border-top: 2px dashed #eee; padding-top: 20px; }
         .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         .res-box { padding: 15px; background: white; border-radius: 12px; text-align: center; border: 1px solid #eef2f7; }
         .res-label { font-size: 0.75em; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
         .res-value { font-size: 1.1em; font-weight: 900; word-break: break-all; }
-        
         .view-mode-selector { margin-bottom: 15px; text-align: center; }
         .view-mode-selector select { width: auto; min-width: 140px; background: #eef2f7; border: none; font-weight: bold; padding: 8px; border-radius: 5px; }
-
         .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 30px; }
-        
-        /* 表格區 */
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 650px; }
         thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; }
         td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
         tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
         .col-net { color: #e74c3c; font-weight: bold; }
-
-        /* RWD 調整 */
-        @media (min-width: 768px) {
-            .btn-group { flex-direction: row; }
-            h2 { font-size: 1.8rem; display: inline; }
-            .author-tag { display: inline; margin-left: 10px; }
-            .summary-grid { grid-template-columns: repeat(4, 1fr); }
-            .res-value { font-size: 1.3em; }
-            .chart-container { height: 450px; }
-            body { padding: 20px; }
-        }
+        @media (min-width: 768px) { .btn-group { flex-direction: row; } h2 { font-size: 1.8rem; display: inline; } .author-tag { display: inline; margin-left: 10px; } .summary-grid { grid-template-columns: repeat(4, 1fr); } .res-value { font-size: 1.3em; } .chart-container { height: 450px; } body { padding: 20px; } }
     </style>
 </head>
 <body>
@@ -159,9 +118,9 @@
     <div class="rule-note">
         <span class="rule-title">⚙️ 試算核心規則：</span>
         <ul>
-            <li><b>複利模式：</b>根據選擇採月複利或年複利滾動資產價值。</li>
-            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入。</li>
-            <li><b>曲線觀察：</b>藍線(市值)與灰線(債務)之間的距離即為淨資產。</li>
+            <li><b>月初投入：</b>本計算採用期初年金模型，每月投入資金即刻參與當月複利。</li>
+            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入（產生的新股亦計入擔保）。</li>
+            <li><b>風險預警：</b>試算結果為理想值，未計摩擦成本；若遇股災，維持率將大幅修正。</li>
             <li><b>手機下載：</b>若無法下載 Excel，請點擊 Line 右下角選「使用瀏覽器開啟」。</li>
         </ul>
     </div>
@@ -370,15 +329,10 @@ function updateChart() {
     });
 }
 
-// 手機下載優化版匯出函式
 function exportToExcel() {
-    if (fullDataRaw.length === 0) {
-        alert("請先進行試算再匯出資料。");
-        return;
-    }
+    if (fullDataRaw.length === 0) { alert("請先進行試算再匯出資料。"); return; }
     const mode = document.getElementById('viewMode').value;
     const today = new Date().toLocaleString();
-    
     let exportData = [
         ["阿奇專業質押試算報表 (Ver 2.7)"],
         [`製表時間：${today}`],
@@ -386,7 +340,6 @@ function exportToExcel() {
         [], 
         ["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]
     ];
-
     if(mode === 'year') {
         const yearlyData = fullDataRaw.filter((item, idx) => {
             const nextItem = fullDataRaw[idx + 1];
@@ -401,29 +354,20 @@ function exportToExcel() {
             exportData.push([item.dateLabel, item.newLoan, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]);
         });
     }
-
     const worksheet = XLSX.utils.aoa_to_sheet(exportData);
     worksheet['!cols'] = [{wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 12}];
     worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
-
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "試算結果");
-    
-    // 改用 Blob 方式下載，增加手機端相容性
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
     const url = window.URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
     link.download = `阿奇質押試算_${mode==='year'?'年報':'月報'}.xlsx`;
     document.body.appendChild(link);
     link.click();
-    
-    setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    }, 100);
+    setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
 }
 </script>
 
