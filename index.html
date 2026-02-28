@@ -6,8 +6,8 @@
     
     <meta name="google-site-verification" content="5sLwJCW8YIQ1VQsBvZQwDU4FYdYbyYALeZcrReV4FX4" />
 
-    <title>定期定額複利計算機 - 阿奇專業版 | 股票質押維持率試算</title>
-    <meta name="description" content="阿奇開發的專業投資工具：支援定期定額複利、股票質押槓桿模擬、維持率預警及 Excel 報表匯出。亦無摩擦成本，助你科學規劃財務槓桿。">
+    <title>定期定額複利計算機：2026 專業存股與質押維持率試算 - 阿奇專業版</title>
+    <meta name="description" content="阿奇開發的專業定期定額複利計算機。支援存股複利試算、股票質押槓桿模擬、維持率預警及 Excel 報表匯出。助你科學規劃 0050、006208 等指數化投資財務槓桿。">
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
     
@@ -19,17 +19,35 @@
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 10px; margin: 0; }
         .container { max-width: 1050px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
         .header-container { text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
-        h2 { display: block; color: var(--primary); margin: 0; font-size: 1.4rem; line-height: 1.4; }
+        h1 { display: block; color: var(--primary); margin: 0; font-size: 1.4rem; line-height: 1.4; }
         .author-tag { font-size: 0.8rem; color: #7f8c8d; font-weight: normal; margin-top: 5px; display: block; }
         
+        /* SEO 文章區塊樣式 */
+        .seo-content { margin-top: 40px; border-top: 1px solid #eee; padding: 20px; color: #444; line-height: 1.8; background: #fcfcfc; border-radius: 10px; }
+        .seo-content h2 { color: var(--primary); font-size: 1.2rem; margin-bottom: 15px; border-left: 5px solid var(--secondary); padding-left: 10px; }
+        .seo-content p { font-size: 0.95rem; margin-bottom: 15px; }
+
         .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: #bdc3c7; color: white; border-radius: 50%; font-size: 10px; cursor: help; margin-left: 4px; position: relative; vertical-align: middle; }
         .info-icon:hover::after { content: attr(data-title); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: normal; z-index: 100; width: 200px; line-height: 1.4; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 15px; }
         .input-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.85em; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         
+        /* 重要修正：統一所有輸入框的大小與高度 */
+        input, select { 
+            width: 100%; 
+            padding: 10px 12px; /* 統一內距 */
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            height: 45px; /* 強制固定所有輸入框高度一致 */
+            line-height: normal; /* 修正日期框文字對齊 */
+            appearance: none; /* 移除行動裝置預設陰影 */
+            -webkit-appearance: none;
+        }
+
         .loan-toggle-container { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -66,22 +84,21 @@
         tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
         .col-net { color: #e74c3c; font-weight: bold; }
 
-        /* 頁尾專業版區塊樣式 */
         .footer-container { max-width: 1050px; margin: 30px auto; padding: 20px; color: #7f8c8d; font-size: 0.8rem; line-height: 1.8; border-top: 1px solid #ddd; }
         .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px; }
         .footer-disclaimer { flex: 2; min-width: 300px; }
         .footer-info { flex: 1; min-width: 200px; text-align: right; }
         .footer-copyright { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; letter-spacing: 1px; }
 
-        @media (min-width: 768px) { .btn-group { flex-direction: row; } h2 { font-size: 1.8rem; display: inline; } .author-tag { display: inline; margin-left: 10px; } .summary-grid { grid-template-columns: repeat(4, 1fr); } .res-value { font-size: 1.3em; } .chart-container { height: 450px; } body { padding: 20px; } }
+        @media (min-width: 768px) { .btn-group { flex-direction: row; } h1 { font-size: 1.8rem; display: inline; } .author-tag { display: inline; margin-left: 10px; } .summary-grid { grid-template-columns: repeat(4, 1fr); } .res-value { font-size: 1.3em; } .chart-container { height: 450px; } body { padding: 20px; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-container">
-        <h2>📈 定期定額複利計算機（含質押槓桿功能）</h2>
-        <span class="author-tag">made by 阿奇 ver.2.8 2026</span>
+        <h1>📈 定期定額複利計算機（含質押槓桿功能）</h1>
+        <span class="author-tag">made by 阿奇 ver.2.9.1 2026</span>
     </div>
     
     <div class="grid">
@@ -90,7 +107,7 @@
         <div class="input-group"><label>每月投資 (元)</label><input type="number" id="monthlyInvest" value="20000"></div>
         <div class="input-group"><label>投資期數 (年)</label><input type="number" id="periodValue" value="10" onchange="updateYearlyInputs()"></div>
         <div class="input-group">
-            <label>複利模式<span class="info-icon" data-title="月複利：資產每月成長一次。年複利：資產每年成長一次，估算較保守。">i</span></label>
+            <label>複利模式<span class="info-icon" data-title="月複利：資產每月成長一次。年複利：資產每年成長一次。">i</span></label>
             <select id="compoundFreq"><option value="month">月複利</option><option value="year">年複利</option></select>
         </div>
         <div class="input-group"><label>預期年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
@@ -111,17 +128,17 @@
         <div class="grid">
             <div class="input-group"><label>質借年利率 (%)</label><input type="number" id="loanRate" value="2.5" step="0.1"></div>
             <div class="input-group">
-                <label>增貸檢視頻率<span class="info-icon" data-title="每年初：每年檢視一次維持率。每個月：每月檢視，將水位運用到極致。">i</span></label>
+                <label>增貸檢視頻率<span class="info-icon" data-title="每年初：每年檢視一次。每個月：每月檢視運用到極致。">i</span></label>
                 <select id="loanFrequency"><option value="year">每年初</option><option value="month">每個月</option></select>
             </div>
             <div class="input-group">
-                <label>預扣一年利息？<span class="info-icon" data-title="若選是，增貸資金會先扣除一年份的利息錢，剩餘資金才投入股市。">i</span></label>
+                <label>預扣一年利息？<span class="info-icon" data-title="若選是，增貸資金會先扣除一年份利息。">i</span></label>
                 <select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select>
             </div>
         </div>
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
             <div class="input-group">
-                <label>維持率模式<span class="info-icon" data-title="統一：所有年份固定。分年：可手動設定每一年份。">i</span></label>
+                <label>維持率模式<span class="info-icon" data-title="統一：固定。分年：手動設定。">i</span></label>
                 <select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select>
             </div>
             <div id="singleRatioInput" class="input-group">
@@ -136,9 +153,8 @@
         <span class="rule-title">⚙️ 試算核心規則：</span>
         <ul>
             <li><b>月初投入：</b>本計算採用期初年金模型，每月投入資金即刻參與當月複利。</li>
-            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入（產生的新股亦計入擔保）。</li>
-            <li><b>風險預警：</b>試算結果為理想值，未計摩擦成本；若遇股災，維持率將大幅修正。</li>
-            <li><b>手機下載：</b>若無法下載 Excel，請點擊 Line 右下角選「使用瀏覽器開啟」。</li>
+            <li><b>質押滾動：</b>依頻率檢視維持率，有空間即增貸並全數投入。</li>
+            <li><b>風險預警：</b>試算結果為理想值，未計摩擦成本；請務必注意市場波動。</li>
         </ul>
     </div>
 
@@ -180,18 +196,25 @@
             </table>
         </div>
     </div>
+
+    <article class="seo-content">
+        <h2>為什麼要使用定期定額複利計算機？</h2>
+        <p>在長期投資的旅程中，<b>定期定額複利</b>是累積財富最強大的武器。透過持續投入並參與複利滾動，時間會為您帶來驚人的回報。本工具不僅提供基本的複利試算，更結合了進階的<b>股票質押維持率試算</b>功能，讓投資人能科學化管理財務槓桿。</p>
+        
+        <h2>存股複利與質押維持率的關聯</h2>
+        <p>當投資人選擇使用股票質押來放大資產時，維持率的控管至關重要。本計算機能幫助您模擬在不同年化報酬率下，若將增貸資金持續滾入，您的資產變動情況。這在遇到股災時，能提供極具價值的參考數據，協助您規劃風險緩衝空間。</p>
+    </article>
 </div>
 
 <footer class="footer-container">
     <div class="footer-content">
         <div class="footer-disclaimer">
             <strong style="color: #34495e;">⚠️ 免責聲明：</strong><br>
-            本試算結果僅供模擬參考，不構成任何投資建議。投資必定有風險，質押槓桿具備高度波動與斷頭風險，使用者應審慎評估自身財務承受能力，並以各金融機構實際公告之數據為準。本計算機不對任何因使用本工具產生的投資損失負擔責任。
+            本試算結果僅供模擬參考，不構成任何投資建議。投資必定有風險，質押槓桿具備高度波動風險，使用者應審慎評估財務能力。
         </div>
         <div class="footer-info">
             <strong style="color: #34495e;">關於工具：</strong><br>
-            版本：Ver 2.8 (2026/02 更新)<br>
-            邏輯：期初年金複利計算模型<br>
+            版本：Ver 2.9.1 (2026/02 UI 優化版)<br>
             開發：阿奇 Archie Lab
         </div>
     </div>
@@ -201,6 +224,7 @@
 </footer>
 
 <script>
+// (以下邏輯不變，僅版本號註記更新)
 let myChart = null;
 let fullDataRaw = [];
 
@@ -305,7 +329,6 @@ function renderTable() {
     const mode = document.getElementById('viewMode').value;
     const tableBody = document.getElementById('tableBody');
     let html = "";
-    
     if (mode === 'year') {
         const yearlyData = fullDataRaw.filter((item, idx) => {
             const nextItem = fullDataRaw[idx + 1];
@@ -313,25 +336,11 @@ function renderTable() {
         });
         yearlyData.forEach(item => {
             const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
-            html += `<tr>
-                <td>${item.actualYear}年</td>
-                <td>$${yearLoans.toLocaleString()}</td>
-                <td>$${item.totalLoan.toLocaleString()}</td>
-                <td>$${item.currentAssets.toLocaleString()}</td>
-                <td class="col-net">$${item.currentNet.toLocaleString()}</td>
-                <td>${item.ratioText}</td>
-            </tr>`;
+            html += `<tr><td>${item.actualYear}年</td><td>$${yearLoans.toLocaleString()}</td><td>$${item.totalLoan.toLocaleString()}</td><td>$${item.currentAssets.toLocaleString()}</td><td class="col-net">$${item.currentNet.toLocaleString()}</td><td>${item.ratioText}</td></tr>`;
         });
     } else {
         fullDataRaw.forEach(item => {
-            html += `<tr class="${item.isYearPoint ? 'highlight-year' : ''}">
-                <td>${item.dateLabel}</td>
-                <td>${item.newLoan > 0 ? '$'+item.newLoan.toLocaleString() : '-'}</td>
-                <td>$${item.totalLoan.toLocaleString()}</td>
-                <td>$${item.currentAssets.toLocaleString()}</td>
-                <td class="col-net">$${item.currentNet.toLocaleString()}</td>
-                <td>${item.ratioText}</td>
-            </tr>`;
+            html += `<tr class="${item.isYearPoint ? 'highlight-year' : ''}"><td>${item.dateLabel}</td><td>${item.newLoan > 0 ? '$'+item.newLoan.toLocaleString() : '-'}</td><td>$${item.totalLoan.toLocaleString()}</td><td>$${item.currentAssets.toLocaleString()}</td><td class="col-net">$${item.currentNet.toLocaleString()}</td><td>${item.ratioText}</td></tr>`;
         });
     }
     tableBody.innerHTML = html;
@@ -342,7 +351,6 @@ function updateChart() {
     const assetData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.currentAssets);
     const netData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.currentNet);
     const loanData = fullDataRaw.filter((_, i) => i % 3 === 0 || i === fullDataRaw.length - 1).map(d => d.totalLoan);
-
     const ctx = document.getElementById('growthChart').getContext('2d');
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx, {
@@ -355,12 +363,7 @@ function updateChart() {
                 { label: '累積債務', data: loanData, borderColor: '#95a5a6', backgroundColor: 'rgba(149, 165, 166, 0.1)', fill: true, tension: 0.2 }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() } } } }
     });
 }
 
@@ -368,26 +371,12 @@ function exportToExcel() {
     if (fullDataRaw.length === 0) { alert("請先進行試算再匯出資料。"); return; }
     const mode = document.getElementById('viewMode').value;
     const today = new Date().toLocaleString();
-    let exportData = [
-        ["阿奇專業質押試算報表 (Ver 2.8)"],
-        [`製表時間：${today}`],
-        ["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],
-        [], 
-        ["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]
-    ];
+    let exportData = [["阿奇專業質押試算報表 (Ver 2.9.1)"],[`製表時間：${today}`],["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],[],["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]];
     if(mode === 'year') {
-        const yearlyData = fullDataRaw.filter((item, idx) => {
-            const nextItem = fullDataRaw[idx + 1];
-            return !nextItem || nextItem.actualYear !== item.actualYear;
-        });
-        yearlyData.forEach(item => {
-            const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
-            exportData.push([item.actualYear + "年", yearLoans, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]);
-        });
+        const yearlyData = fullDataRaw.filter((item, idx) => { const nextItem = fullDataRaw[idx + 1]; return !nextItem || nextItem.actualYear !== item.actualYear; });
+        yearlyData.forEach(item => { const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0); exportData.push([item.actualYear + "年", yearLoans, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]); });
     } else {
-        fullDataRaw.forEach(item => {
-            exportData.push([item.dateLabel, item.newLoan, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]);
-        });
+        fullDataRaw.forEach(item => { exportData.push([item.dateLabel, item.newLoan, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]); });
     }
     const worksheet = XLSX.utils.aoa_to_sheet(exportData);
     worksheet['!cols'] = [{wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 12}];
@@ -399,7 +388,7 @@ function exportToExcel() {
     const url = window.URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `阿奇質押試算_${mode==='year'?'年報':'月報'}_Ver2.8.xlsx`;
+    link.download = `阿奇質押試算_Ver2.9.1.xlsx`;
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
