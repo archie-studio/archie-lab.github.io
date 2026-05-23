@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E2KYKR3V1Y"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-E2KYKR3V1Y');
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -23,23 +15,14 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f5f6f8; --table-header: #34495e; }
-        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 0; margin: 0; }
-        
-        /* ===== 導覽列 (與退休計算機樣式對齊) ===== */
-        .arch-navbar { background: var(--table-header); color: white; display: flex; align-items: center; padding: 12px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 9999; }
-        .arch-hamburger { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
-        .arch-nav-title { font-size: 1.1rem; font-weight: bold; letter-spacing: 1px; }
-        .arch-dropdown { display: none; position: absolute; top: 56px; left: 0; background: white; min-width: 280px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); z-index: 9999; flex-direction: column; }
-        .arch-dropdown.show { display: flex; }
-        .arch-dropdown a { color: var(--primary); padding: 15px 20px; text-decoration: none; font-size: 0.95rem; border-bottom: 1px solid #eee; font-weight: bold; }
-        .arch-dropdown a:hover { background: #f3f4f6; color: var(--secondary); }
-
-        .container { max-width: 1050px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px auto; }
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f8f9fa; --table-header: #34495e; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 10px; margin: 0; }
+        .container { max-width: 1050px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
         .header-container { text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
         h1 { display: block; color: var(--primary); margin: 0; font-size: 1.4rem; line-height: 1.4; }
         .author-tag { font-size: 0.8rem; color: #7f8c8d; font-weight: normal; margin-top: 5px; display: block; }
         
+        /* SEO 文章區塊樣式 */
         .seo-content { margin-top: 40px; border-top: 1px solid #eee; padding: 20px; color: #444; line-height: 1.8; background: #fcfcfc; border-radius: 10px; }
         .seo-content h2 { color: var(--primary); font-size: 1.2rem; margin-bottom: 15px; border-left: 5px solid var(--secondary); padding-left: 10px; }
         .seo-content p { font-size: 0.95rem; margin-bottom: 15px; }
@@ -51,9 +34,19 @@
         .input-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.85em; }
         
-        /* 🌟 BUG 修復核心：加入 position: relative 讓子元素定位基準恢復正常 */
-        .input-wrap { position: relative; width: 100%; }
-        input, select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; height: 45px; line-height: normal; appearance: none; -webkit-appearance: none; }
+        /* 重要修正：統一所有輸入框的大小與高度 */
+        input, select { 
+            width: 100%; 
+            padding: 10px 12px; /* 統一內距 */
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            height: 45px; /* 強制固定所有輸入框高度一致 */
+            line-height: normal; /* 修正日期框文字對齊 */
+            appearance: none; /* 移除行動裝置預設陰影 */
+            -webkit-appearance: none;
+        }
 
         .loan-toggle-container { background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffe0b2; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0; }
@@ -98,16 +91,91 @@
         .footer-copyright { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; letter-spacing: 1px; }
 
         @media (min-width: 768px) { .btn-group { flex-direction: row; } h1 { font-size: 1.8rem; display: inline; } .author-tag { display: inline; margin-left: 10px; } .summary-grid { grid-template-columns: repeat(4, 1fr); } .res-value { font-size: 1.3em; } .chart-container { height: 450px; } body { padding: 20px; } }
+
+        /* --- 增量加入：導覽列與選單樣式 --- */
+        .arch-navbar {
+            background: var(--table-header);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            /* 負邊距用來抵銷 body 的 padding，讓導覽列貼緊螢幕邊緣 */
+            margin: -10px -10px 20px -10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        @media (min-width: 768px) {
+            .arch-navbar {
+                margin: -20px -20px 20px -20px; /* 抵銷桌面版 body 的 padding */
+            }
+        }
+        .arch-hamburger {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0 15px 0 0;
+            width: auto;
+            height: auto;
+            line-height: 1;
+            border-radius: 0;
+            transition: color 0.3s;
+        }
+        .arch-hamburger:hover {
+            background: transparent;
+            color: var(--accent);
+        }
+        .arch-nav-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .arch-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 280px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 9999;
+            flex-direction: column;
+            border-bottom-right-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        .arch-dropdown.show {
+            display: flex;
+        }
+        .arch-dropdown a {
+            color: var(--primary);
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+        .arch-dropdown a:hover {
+            background: var(--bg);
+            color: var(--secondary);
+        }
+        .arch-dropdown a:last-child {
+            border-bottom: none;
+        }
+        /* --- 導覽列樣式結束 --- */
     </style>
 </head>
 <body>
 
+<!-- 增量加入：頂部滿版導覽列 -->
 <div class="arch-navbar">
     <button class="arch-hamburger" onclick="toggleArchMenu(event)">☰</button>
     <div class="arch-nav-title">GK Archie Lab 投資工具</div>
     <div class="arch-dropdown" id="archNavMenu">
         <a href="https://archie-studio.github.io/loan-calc.html/" target="_blank">1. 複利計算機（含信貸功能）</a>
-        <a href="https://archie-studio.github.io/GK-Guardrail-Staking-Monte-Carlo-Simulator/" target="_blank">2. 退休提領計算機 (蒙地卡羅)</a>
+        <a href="https://archie-studio.github.io/GK-Guardrail-Staking-Monte-Carlo-Simulator/#" target="_blank">2. 退休提領計算機 (蒙地卡羅)</a>
         <a href="#">3. 定期定額複利計算機（質押）(目前頁面)</a>
     </div>
 </div>
@@ -115,19 +183,19 @@
 <div class="container">
     <div class="header-container">
         <h1>📈 定期定額複利計算機（含質押槓桿功能）</h1>
-        <span class="author-tag">made by 阿奇 ver.2.9.2 2026</span>
+        <span class="author-tag">made by 阿奇 ver.2.9.1 2026</span>
     </div>
     
     <div class="grid">
-        <div class="input-group"><label>開始年月</label><div class="input-wrap"><input type="month" id="startDate" value="2026-01"></div></div>
-        <div class="input-group"><label>初始本金 (元)</label><div class="input-wrap"><input type="number" id="initPrincipal" value="1000000"></div></div>
-        <div class="input-group"><label>每月投資 (元)</label><div class="input-wrap"><input type="number" id="monthlyInvest" value="20000"></div></div>
-        <div class="input-group"><label>投資期數 (年)</label><div class="input-wrap"><input type="number" id="periodValue" value="10" onchange="updateYearlyInputs()"></div></div>
+        <div class="input-group"><label>開始年月</label><input type="month" id="startDate" value="2026-01"></div>
+        <div class="input-group"><label>初始本金 (元)</label><input type="number" id="initPrincipal" value="1000000"></div>
+        <div class="input-group"><label>每月投資 (元)</label><input type="number" id="monthlyInvest" value="20000"></div>
+        <div class="input-group"><label>投資期數 (年)</label><input type="number" id="periodValue" value="10" onchange="updateYearlyInputs()"></div>
         <div class="input-group">
             <label>複利模式<span class="info-icon" data-title="月複利：資產每月成長一次。年複利：資產每年成長一次。">i</span></label>
-            <div class="input-wrap"><select id="compoundFreq"><option value="month">月複利</option><option value="year">年複利</option></select></div>
+            <select id="compoundFreq"><option value="month">月複利</option><option value="year">年複利</option></select>
         </div>
-        <div class="input-group"><label>預期年報酬率 (%)</label><div class="input-wrap"><input type="number" id="returnRate" value="8" step="0.1"></div></div>
+        <div class="input-group"><label>預期年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
     </div>
 
     <div class="loan-toggle-container">
@@ -143,24 +211,24 @@
 
     <div id="loanSettings">
         <div class="grid">
-            <div class="input-group"><label>質借年利率 (%)</label><div class="input-wrap"><input type="number" id="loanRate" value="2.5" step="0.1"></div></div>
+            <div class="input-group"><label>質借年利率 (%)</label><input type="number" id="loanRate" value="2.5" step="0.1"></div>
             <div class="input-group">
                 <label>增貸檢視頻率<span class="info-icon" data-title="每年初：每年檢視一次。每個月：每月檢視運用到極致。">i</span></label>
-                <div class="input-wrap"><select id="loanFrequency"><option value="year">每年初</option><option value="month">每個月</option></select></div>
+                <select id="loanFrequency"><option value="year">每年初</option><option value="month">每個月</option></select>
             </div>
             <div class="input-group">
                 <label>預扣一年利息？<span class="info-icon" data-title="若選是，增貸資金會先扣除一年份利息。">i</span></label>
-                <div class="input-wrap"><select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select></div>
+                <select id="deductInterest"><option value="yes">是</option><option value="no" selected>否</option></select>
             </div>
         </div>
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
             <div class="input-group">
                 <label>維持率模式<span class="info-icon" data-title="統一：固定。分年：手動設定。">i</span></label>
-                <div class="input-wrap"><select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select></div>
+                <select id="ratioMode" onchange="toggleRatioMode()"><option value="single">統一維持率</option><option value="yearly">分年自定義</option></select>
             </div>
             <div id="singleRatioInput" class="input-group">
                 <label>目標維持率 (%)</label>
-                <div class="input-wrap"><input type="number" id="mainRate" value="250"></div>
+                <input type="number" id="mainRate" value="250">
             </div>
         </div>
         <div id="yearlyRatioInputs" style="display:none;"><label>分年維持率設定 (%)</label><div id="yearlyInputContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 5px;"></div></div>
@@ -231,7 +299,7 @@
         </div>
         <div class="footer-info">
             <strong style="color: #34495e;">關於工具：</strong><br>
-            版本：Ver 2.9.2 (2026/05 UI 修復版)<br>
+            版本：Ver 2.9.1 (2026/02 UI 優化版)<br>
             開發：阿奇 Archie Lab
         </div>
     </div>
@@ -241,23 +309,9 @@
 </footer>
 
 <script>
+// (以下邏輯不變，僅版本號註記更新)
 let myChart = null;
 let fullDataRaw = [];
-
-/* --- 生態系選單控制邏輯 --- */
-function toggleArchMenu(event) {
-    event.stopPropagation();
-    document.getElementById("archNavMenu").classList.toggle("show");
-}
-
-window.addEventListener('click', function(event) {
-    if (!event.target.matches('.arch-hamburger')) {
-        var dropdowns = document.getElementsByClassName("arch-dropdown");
-        for (var i = 0; i < dropdowns.length; i++) {
-            if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-        }
-    }
-});
 
 function toggleLoanSettings() {
     const isEnabled = document.getElementById('enableLoan').checked;
@@ -276,7 +330,7 @@ function updateYearlyInputs() {
     const container = document.getElementById('yearlyInputContainer');
     container.innerHTML = "";
     for (let i = 1; i <= years; i++) {
-        container.innerHTML += `<div style="font-size:0.75rem;">第${i}年:<div class="input-wrap"><input type="number" class="y-rate" value="250"></div>%</div>`;
+        container.innerHTML += `<div style="font-size:0.75rem;">第${i}年:<input type="number" class="y-rate" value="250" style="width:50px;padding:3px;font-size:12px;">%</div>`;
     }
 }
 
@@ -402,7 +456,7 @@ function exportToExcel() {
     if (fullDataRaw.length === 0) { alert("請先進行試算再匯出資料。"); return; }
     const mode = document.getElementById('viewMode').value;
     const today = new Date().toLocaleString();
-    let exportData = [["阿奇專業質押試算報表 (Ver 2.9.2)"],[`製表時間：${today}`],["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],[],["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]];
+    let exportData = [["阿奇專業質押試算報表 (Ver 2.9.1)"],[`製表時間：${today}`],["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],[],["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]];
     if(mode === 'year') {
         const yearlyData = fullDataRaw.filter((item, idx) => { const nextItem = fullDataRaw[idx + 1]; return !nextItem || nextItem.actualYear !== item.actualYear; });
         yearlyData.forEach(item => { const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0); exportData.push([item.actualYear + "年", yearLoans, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]); });
@@ -419,11 +473,31 @@ function exportToExcel() {
     const url = window.URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `阿奇質押試算_Ver2.9.2.xlsx`;
+    link.download = `阿奇質押試算_Ver2.9.1.xlsx`;
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
 }
+
+/* --- 增量加入：導覽列下拉選單控制邏輯 --- */
+function toggleArchMenu(event) {
+    event.stopPropagation(); // 阻止點擊事件冒泡
+    document.getElementById("archNavMenu").classList.toggle("show");
+}
+
+// 點擊畫面其他地方時關閉選單
+window.addEventListener('click', function(event) {
+    if (!event.target.matches('.arch-hamburger')) {
+        var dropdowns = document.getElementsByClassName("arch-dropdown");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+});
+/* --- 導覽列邏輯結束 --- */
 </script>
 
 </body>
