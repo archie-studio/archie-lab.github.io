@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E2KYKR3V1Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-E2KYKR3V1Y');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -15,7 +23,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f8f9fa; --table-header: #34495e; }
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #f39c12; --bg: #f5f6f8; --table-header: #34495e; }
         /* 修正 body padding 以確保導覽列能 100% 貼緊螢幕邊緣 */
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); padding: 0; margin: 0; }
         .app-wrapper { padding: 10px; }
@@ -28,13 +36,15 @@
         .header-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1a1d23; transition: opacity .2s; }
         .header-brand:hover { opacity: 0.8; }
         .brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; font-weight: bold; }
-        .brand-name { font-weight: 700; font-size: 15px; }
+        /* 修正標題被擠到下一行的問題：加入 white-space: nowrap; */
+        .brand-name { font-weight: 700; font-size: 15px; white-space: nowrap; }
 
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(26, 29, 35, 0.4); backdrop-filter: blur(2px); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
         .sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background: #fff; z-index: 1001; box-shadow: 4px 0 24px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: flex; flex-direction: column; }
         .sidebar-menu.active { transform: translateX(300px); }
-        .sidebar-header { padding: 20px 24px; border-bottom: 1px solid #e8eaed; display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 16px; color: #1a1d23; }
+        /* 修正側邊欄標題被擠到下一行的問題：加入 white-space: nowrap; */
+        .sidebar-header { padding: 20px 24px; border-bottom: 1px solid #e8eaed; display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 16px; color: #1a1d23; white-space: nowrap; }
         .close-sidebar-btn { background: transparent; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; transition: .2s; padding: 0; margin: 0; }
         .close-sidebar-btn:hover { color: #ef4444; }
         .sidebar-nav { padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -129,7 +139,7 @@
 </head>
 <body>
 
-<!-- 生態系導覽側邊欄 (與退休計算機 100% 一致) -->
+<!-- 生態系導覽側邊欄 -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar-menu" id="sidebarMenu">
   <div class="sidebar-header">
@@ -146,7 +156,7 @@
   </div>
 </div>
 
-<!-- 頂部滿版導覽列 (與退休計算機 100% 一致) -->
+<!-- 頂部滿版導覽列 -->
 <header class="site-header">
   <div class="header-left">
     <button class="hamburger-btn" onclick="toggleSidebar()">
@@ -159,12 +169,11 @@
   </div>
 </header>
 
-<!-- 加入 app-wrapper 包覆原本的計算機內容，維持原本的間隔比例 -->
 <div class="app-wrapper">
     <div class="container">
         <div class="header-container">
             <h1>📈 定期定額複利計算機（含質押槓桿功能）</h1>
-            <span class="author-tag">made by 阿奇 ver.2.9.2 2026</span>
+            <span class="author-tag">made by 阿奇 ver.2.9.3 2026</span>
         </div>
         
         <div class="grid">
@@ -233,7 +242,7 @@
             <div class="summary-grid">
                 <div class="res-box"><div class="res-label">最終總市值</div><div class="res-value" id="resTotal" style="color:#2980b9;">$0</div></div>
                 <div class="res-box"><div class="res-label">累積總債務</div><div class="res-value" id="resLoan" style="color:#7f8c8d;">$0</div></div>
-                <div class="res-box" style="background: #fff5f5;"><div class="res-label">最終淨資產</div><div class="res-value" id="resNet" style="color:#e74c3c;">$0</div></div>
+                <div class="res-box" style="background: #fff5f5;"><div class="res-label">最終淨資Asset</div><div class="res-value" id="resNet" style="color:#e74c3c;">$0</div></div>
                 <div class="res-box"><div class="res-label">自提本金</div><div class="res-value" id="resSelf" style="color:#2c3e50;">$0</div></div>
             </div>
 
@@ -280,7 +289,7 @@
             </div>
             <div class="footer-info">
                 <strong style="color: #34495e;">關於工具：</strong><br>
-                版本：Ver 2.9.2 (2026/02 UI 優化版)<br>
+                版本：Ver 2.9.3 (UI 滿版佈局升級)<br>
                 開發：阿奇 Archie Lab
             </div>
         </div>
@@ -291,11 +300,10 @@
 </div>
 
 <script>
-// (以下為計算機的本體邏輯，無任何更動)
 let myChart = null;
 let fullDataRaw = [];
 
-/* --- 生態系導覽列控制邏輯 (替換原有的 dropdown 腳本) --- */
+/* --- 生態系導覽列控制邏輯 --- */
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebarMenu');
     const overlay = document.getElementById('sidebarOverlay');
@@ -451,7 +459,7 @@ function exportToExcel() {
     if (fullDataRaw.length === 0) { alert("請先進行試算再匯出資料。"); return; }
     const mode = document.getElementById('viewMode').value;
     const today = new Date().toLocaleString();
-    let exportData = [["阿奇專業質押試算報表 (Ver 2.9.1)"],[`製表時間：${today}`],["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],[],["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]];
+    let exportData = [["阿奇專業質押試算報表 (Ver 2.9.3)"],[`製表時間：${today}`],["註：本表模擬資產成長，質押請務必嚴控維持率風險。"],[],["時間", "期間增貸額", "累積債務", "月底市值", "預估淨資產", "目前維持率"]];
     if(mode === 'year') {
         const yearlyData = fullDataRaw.filter((item, idx) => { const nextItem = fullDataRaw[idx + 1]; return !nextItem || nextItem.actualYear !== item.actualYear; });
         yearlyData.forEach(item => { const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0); exportData.push([item.actualYear + "年", yearLoans, item.totalLoan, item.currentAssets, item.currentNet, item.ratioText]); });
@@ -468,7 +476,7 @@ function exportToExcel() {
     const url = window.URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `阿奇質押試算_Ver2.9.1.xlsx`;
+    link.download = `阿奇質押試算_Ver2.9.3.xlsx`;
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
