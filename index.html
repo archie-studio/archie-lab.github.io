@@ -91,9 +91,94 @@
         .footer-copyright { text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; letter-spacing: 1px; }
 
         @media (min-width: 768px) { .btn-group { flex-direction: row; } h1 { font-size: 1.8rem; display: inline; } .author-tag { display: inline; margin-left: 10px; } .summary-grid { grid-template-columns: repeat(4, 1fr); } .res-value { font-size: 1.3em; } .chart-container { height: 450px; } body { padding: 20px; } }
+
+        /* --- 增量加入：導覽列與選單樣式 --- */
+        .arch-navbar {
+            background: var(--table-header);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            /* 負邊距用來抵銷 body 的 padding，讓導覽列貼緊螢幕邊緣 */
+            margin: -10px -10px 20px -10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        @media (min-width: 768px) {
+            .arch-navbar {
+                margin: -20px -20px 20px -20px; /* 抵銷桌面版 body 的 padding */
+            }
+        }
+        .arch-hamburger {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0 15px 0 0;
+            width: auto;
+            height: auto;
+            line-height: 1;
+            border-radius: 0;
+            transition: color 0.3s;
+        }
+        .arch-hamburger:hover {
+            background: transparent;
+            color: var(--accent);
+        }
+        .arch-nav-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .arch-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 280px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 9999;
+            flex-direction: column;
+            border-bottom-right-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        .arch-dropdown.show {
+            display: flex;
+        }
+        .arch-dropdown a {
+            color: var(--primary);
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+        .arch-dropdown a:hover {
+            background: var(--bg);
+            color: var(--secondary);
+        }
+        .arch-dropdown a:last-child {
+            border-bottom: none;
+        }
+        /* --- 導覽列樣式結束 --- */
     </style>
 </head>
 <body>
+
+<!-- 增量加入：頂部滿版導覽列 -->
+<div class="arch-navbar">
+    <button class="arch-hamburger" onclick="toggleArchMenu(event)">☰</button>
+    <div class="arch-nav-title">GK Archie Lab 投資工具</div>
+    <div class="arch-dropdown" id="archNavMenu">
+        <a href="https://archie-studio.github.io/loan-calc.html/" target="_blank">1. 複利計算機（含信貸功能）</a>
+        <a href="https://archie-studio.github.io/GK-Guardrail-Staking-Monte-Carlo-Simulator/#" target="_blank">2. 退休提領計算機 (蒙地卡羅)</a>
+        <a href="#">3. 定期定額複利計算機（質押）(目前頁面)</a>
+    </div>
+</div>
 
 <div class="container">
     <div class="header-container">
@@ -393,6 +478,26 @@ function exportToExcel() {
     link.click();
     setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
 }
+
+/* --- 增量加入：導覽列下拉選單控制邏輯 --- */
+function toggleArchMenu(event) {
+    event.stopPropagation(); // 阻止點擊事件冒泡
+    document.getElementById("archNavMenu").classList.toggle("show");
+}
+
+// 點擊畫面其他地方時關閉選單
+window.addEventListener('click', function(event) {
+    if (!event.target.matches('.arch-hamburger')) {
+        var dropdowns = document.getElementsByClassName("arch-dropdown");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+});
+/* --- 導覽列邏輯結束 --- */
 </script>
 
 </body>
