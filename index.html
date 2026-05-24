@@ -126,7 +126,7 @@
         
         .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 30px; }
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 750px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 850px; } /* 增加 min-width 適應新欄位 */
         thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; }
         td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
         tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
@@ -186,7 +186,7 @@
     <div class="container">
         <div class="header-container">
             <h1>📈 定期定額複利計算機（含質押槓桿功能）</h1>
-            <span class="author-tag">made by 阿奇 ver.3.0.0 2026</span>
+            <span class="author-tag">made by 阿奇 ver.3.1.0 2026</span>
         </div>
         
         <div class="grid">
@@ -201,7 +201,7 @@
             <div class="input-group"><label>預期年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
         </div>
 
-        <!-- 開關區：質押與蒙地卡羅 -->
+        <!-- 質押開關區 -->
         <div class="loan-toggle-container">
             <div>
                 <strong style="color: #d35400;">🚀 啟用質押槓桿功能</strong>
@@ -213,32 +213,7 @@
             </label>
         </div>
 
-        <div class="monte-carlo-toggle-container">
-            <div>
-                <strong style="color: #16a085;">🎲 蒙地卡羅模擬 (1,000次壓力測試)</strong>
-                <div style="font-size: 0.75em; color: #7f8c8d;">加入隨機波動性，測試斷頭機率與防禦極限</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="enableMonteCarlo" onchange="toggleMonteCarloSettings()">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <!-- 蒙地卡羅設定區 -->
-        <div id="monteCarloSettings">
-            <div class="input-group" style="margin-bottom: 0;">
-                <label>年化波動率 (標準差 %)</label>
-                <input type="number" id="volatility" value="20" step="1">
-            </div>
-            <div class="risk-btn-group">
-                <button class="risk-btn" onclick="setVolatility(10, this)">保守(10%)<br><small>債券類</small></button>
-                <button class="risk-btn" onclick="setVolatility(15, this)">穩健(15%)<br><small>高息ETF</small></button>
-                <button class="risk-btn active" onclick="setVolatility(20, this)">中等(20%)<br><small>大盤ETF</small></button>
-                <button class="risk-btn" onclick="setVolatility(30, this)">積極(30%)<br><small>個股類</small></button>
-            </div>
-        </div>
-
-        <!-- 質押設定區 -->
+        <!-- 質押設定區 (移動至開關正下方) -->
         <div id="loanSettings">
             <div class="grid" style="grid-template-columns: 1fr 1fr;">
                 <div class="input-group">
@@ -311,6 +286,32 @@
             </div>
         </div>
 
+        <!-- 蒙地卡羅開關區 -->
+        <div class="monte-carlo-toggle-container">
+            <div>
+                <strong style="color: #16a085;">🎲 蒙地卡羅模擬 (1,000次壓力測試)</strong>
+                <div style="font-size: 0.75em; color: #7f8c8d;">加入隨機波動性，測試斷頭機率與防禦極限</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="enableMonteCarlo" onchange="toggleMonteCarloSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- 蒙地卡羅設定區 -->
+        <div id="monteCarloSettings">
+            <div class="input-group" style="margin-bottom: 0;">
+                <label>年化波動率 (標準差 %)</label>
+                <input type="number" id="volatility" value="20" step="1">
+            </div>
+            <div class="risk-btn-group">
+                <button class="risk-btn" onclick="setVolatility(10, this)">保守(10%)<br><small>債券類</small></button>
+                <button class="risk-btn" onclick="setVolatility(15, this)">穩健(15%)<br><small>高息ETF</small></button>
+                <button class="risk-btn active" onclick="setVolatility(20, this)">中等(20%)<br><small>大盤ETF</small></button>
+                <button class="risk-btn" onclick="setVolatility(30, this)">積極(30%)<br><small>個股類</small></button>
+            </div>
+        </div>
+
         <div class="rule-note">
             <span class="rule-title">⚙️ 試算核心規則：</span>
             <ul>
@@ -363,6 +364,7 @@
                     <thead>
                         <tr>
                             <th>時間</th>
+                            <th>報酬率</th>
                             <th>當年質借利率</th>
                             <th>增貸</th>
                             <th>累積債務</th>
@@ -396,7 +398,7 @@
             </div>
             <div class="footer-info">
                 <strong style="color: #34495e;">關於工具：</strong><br>
-                版本：Ver 3.0.0 (壓力測試與動態利率升級版)<br>
+                版本：Ver 3.1.0 (壓力測試與動態利率升級版)<br>
                 開發：阿奇 Archie Lab
             </div>
         </div>
@@ -554,16 +556,23 @@ function calculate() {
         let currentAssets = principal;
         let totalLoan = 0;
         let isMarginCall = false;
+        
+        // 將年度市場報酬提取到外層，確保每年只變動一次（讓利率觸發邏輯合理化）
+        let currentYearlyReturn = expectedAnnualReturn;
 
         for (let m = 0; m < totalMonths; m++) {
             let yearIdx = Math.floor(m / 12);
             
             // 決定本期市場報酬率
             let currentMonthlyReturn = monthlyMean;
-            let currentYearlyReturn = expectedAnnualReturn;
             if (useMC) {
                 currentMonthlyReturn = monthlyMean + randn_bm() * monthlyVolatility;
-                currentYearlyReturn = expectedAnnualReturn + randn_bm() * volatility;
+                // 每年初產生一次該年度的總體環境報酬 (用來決定利率升降)
+                if (m % 12 === 0) {
+                    currentYearlyReturn = expectedAnnualReturn + randn_bm() * volatility;
+                }
+            } else {
+                currentYearlyReturn = expectedAnnualReturn;
             }
 
             // 決定本期借款利率
@@ -615,11 +624,19 @@ function calculate() {
                 isMarginCall = true;
             }
 
+            // 準備顯示文字（紅漲綠跌邏輯：台灣習慣紅字代表正報酬，綠字代表負報酬）
+            let displayReturn = (currentYearlyReturn * 100).toFixed(2);
+            let returnRateShow = currentYearlyReturn >= 0 ? 
+                `<span style="color:var(--warning); font-weight:bold;">+${displayReturn}%</span>` : 
+                `<span style="color:var(--success-text); font-weight:bold;">${displayReturn}%</span>`;
+
             let d = new Date(startYear, startMonth - 1 + m);
             pathData.push({
                 monthIndex: m, 
                 actualYear: d.getFullYear(), 
                 dateLabel: `${d.getFullYear()}/${d.getMonth()+1}`,
+                returnRateRaw: currentYearlyReturn,
+                returnRateShow: returnRateShow,
                 intRateShow: (currentIntRate * 100).toFixed(2) + '%',
                 newLoan: Math.round(newLoan), 
                 totalLoan: Math.round(totalLoan),
@@ -705,11 +722,29 @@ function renderTable() {
         });
         yearlyData.forEach(item => {
             const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
-            html += `<tr><td>${item.actualYear}年</td><td>${item.intRateShow}</td><td>$${yearLoans.toLocaleString()}</td><td>$${item.totalLoan.toLocaleString()}</td><td>$${item.currentAssets.toLocaleString()}</td><td class="col-net">$${item.netWorth.toLocaleString()}</td><td>${item.ratioText}</td></tr>`;
+            html += `<tr>
+                <td>${item.actualYear}年</td>
+                <td>${item.returnRateShow}</td>
+                <td>${item.intRateShow}</td>
+                <td>$${yearLoans.toLocaleString()}</td>
+                <td>$${item.totalLoan.toLocaleString()}</td>
+                <td>$${item.currentAssets.toLocaleString()}</td>
+                <td class="col-net">$${item.netWorth.toLocaleString()}</td>
+                <td>${item.ratioText}</td>
+            </tr>`;
         });
     } else {
         fullDataRaw.forEach(item => {
-            html += `<tr class="${item.isYearPoint ? 'highlight-year' : ''}"><td>${item.dateLabel}</td><td>${item.intRateShow}</td><td>${item.newLoan > 0 ? '$'+item.newLoan.toLocaleString() : '-'}</td><td>$${item.totalLoan.toLocaleString()}</td><td>$${item.currentAssets.toLocaleString()}</td><td class="col-net">$${item.netWorth.toLocaleString()}</td><td>${item.ratioText}</td></tr>`;
+            html += `<tr class="${item.isYearPoint ? 'highlight-year' : ''}">
+                <td>${item.dateLabel}</td>
+                <td>${item.returnRateShow}</td>
+                <td>${item.intRateShow}</td>
+                <td>${item.newLoan > 0 ? '$'+item.newLoan.toLocaleString() : '-'}</td>
+                <td>$${item.totalLoan.toLocaleString()}</td>
+                <td>$${item.currentAssets.toLocaleString()}</td>
+                <td class="col-net">$${item.netWorth.toLocaleString()}</td>
+                <td>${item.ratioText}</td>
+            </tr>`;
         });
     }
     tableBody.innerHTML = html;
@@ -757,28 +792,46 @@ function exportToExcel() {
     let simNote = isMonteCarlo ? `【蒙地卡羅模式啟用：中位數路徑 | 歷史斷頭機率：${document.getElementById('resMarginCall').innerText}】` : "【靜態標準試算】";
 
     let exportData = [
-        ["阿奇專業質押試算報表 (Ver 3.0.0)"],
+        ["阿奇專業質押試算報表 (Ver 3.1.0)"],
         [`製表時間：${today} / ${simNote}`],
         ["註：本表模擬質押槓桿，請務必嚴控維持率風險，防範系統性股災。"],
         [],
-        ["時間", "當年質借利率", "期間增貸額", "累積債務", "月底總市值", "預估淨資產", "維持率"]
+        ["時間", "報酬率", "當年質借利率", "期間增貸額", "累積債務", "月底總市值", "預估淨資產", "維持率"]
     ];
 
     if(mode === 'year') {
         const yearlyData = fullDataRaw.filter((item, idx) => { const nextItem = fullDataRaw[idx + 1]; return !nextItem || nextItem.actualYear !== item.actualYear; });
         yearlyData.forEach(item => { 
             const yearLoans = fullDataRaw.filter(f => f.actualYear === item.actualYear).reduce((sum, curr) => sum + curr.newLoan, 0);
-            exportData.push([item.actualYear + "年", item.intRateShow, yearLoans, item.totalLoan, item.currentAssets, item.netWorth, item.ratioText]); 
+            exportData.push([
+                item.actualYear + "年", 
+                (item.returnRateRaw >= 0 ? '+' : '') + (item.returnRateRaw * 100).toFixed(2) + '%', 
+                item.intRateShow, 
+                yearLoans, 
+                item.totalLoan, 
+                item.currentAssets, 
+                item.netWorth, 
+                item.ratioText
+            ]); 
         });
     } else {
         fullDataRaw.forEach(item => { 
-            exportData.push([item.dateLabel, item.intRateShow, item.newLoan, item.totalLoan, item.currentAssets, item.netWorth, item.ratioText]); 
+            exportData.push([
+                item.dateLabel, 
+                (item.returnRateRaw >= 0 ? '+' : '') + (item.returnRateRaw * 100).toFixed(2) + '%', 
+                item.intRateShow, 
+                item.newLoan, 
+                item.totalLoan, 
+                item.currentAssets, 
+                item.netWorth, 
+                item.ratioText
+            ]); 
         });
     }
 
     const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-    worksheet['!cols'] = [{wch: 12}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 16}, {wch: 16}, {wch: 12}];
-    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
+    worksheet['!cols'] = [{wch: 12}, {wch: 12}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 16}, {wch: 16}, {wch: 12}];
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }];
     
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "質押試算結果");
@@ -788,7 +841,7 @@ function exportToExcel() {
     const url = window.URL.createObjectURL(data);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `阿奇質押槓桿試算_Ver3.0.xlsx`;
+    link.download = `阿奇質押槓桿試算_Ver3.1.xlsx`;
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
