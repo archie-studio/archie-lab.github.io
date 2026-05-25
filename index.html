@@ -97,6 +97,8 @@
         input:checked + .slider { background-color: var(--accent); }
         .monte-carlo-toggle-container input:checked + .slider { background-color: #1abc9c; }
         input:checked + .slider:before { transform: translateX(26px); }
+        /* 鎖定狀態的視覺回饋 */
+        .switch input:disabled + .slider { opacity: 0.6; cursor: not-allowed; }
         
         #loanSettings { display: none; background: #fafafa; padding: 15px; border-radius: 10px; border: 1px dashed var(--accent); margin-top: 10px; }
         #monteCarloSettings { display: none; background: #fdfefe; padding: 15px; border-radius: 10px; border: 1px dashed #1abc9c; margin-top: 10px; }
@@ -126,7 +128,7 @@
         
         .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 30px; }
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 850px; } /* 增加 min-width 適應新欄位 */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 850px; }
         thead th { position: sticky; top: 0; background: var(--table-header); color: white; padding: 12px; z-index: 10; }
         td { border-bottom: 1px solid #eee; padding: 10px; text-align: center; }
         tr.highlight-year { background: #fffcf0 !important; font-weight: bold; border-left: 5px solid var(--accent); }
@@ -152,7 +154,6 @@
 </head>
 <body>
 
-<!-- 生態系導覽側邊欄 -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar-menu" id="sidebarMenu">
   <div class="sidebar-header">
@@ -169,7 +170,6 @@
   </div>
 </div>
 
-<!-- 頂部滿版導覽列 -->
 <header class="site-header">
   <div class="header-left">
     <button class="hamburger-btn" onclick="toggleSidebar()">
@@ -201,7 +201,6 @@
             <div class="input-group"><label>預期年報酬率 (%)</label><input type="number" id="returnRate" value="8" step="0.1"></div>
         </div>
 
-        <!-- 質押開關區 -->
         <div class="loan-toggle-container">
             <div>
                 <strong style="color: #d35400;">🚀 啟用質押槓桿功能</strong>
@@ -213,7 +212,6 @@
             </label>
         </div>
 
-        <!-- 質押設定區 (移動至開關正下方) -->
         <div id="loanSettings">
             <div class="grid" style="grid-template-columns: 1fr 1fr;">
                 <div class="input-group">
@@ -286,7 +284,6 @@
             </div>
         </div>
 
-        <!-- 蒙地卡羅開關區 -->
         <div class="monte-carlo-toggle-container">
             <div>
                 <strong style="color: #16a085;">🎲 蒙地卡羅模擬 (1,000次壓力測試)</strong>
@@ -298,7 +295,6 @@
             </label>
         </div>
 
-        <!-- 蒙地卡羅設定區 -->
         <div id="monteCarloSettings">
             <div class="input-group" style="margin-bottom: 0;">
                 <label>年化波動率 (標準差 %)</label>
@@ -342,7 +338,6 @@
                     <div class="res-value" id="resNet" style="color:#e74c3c;">$0</div>
                     <div class="res-sub" id="subNet"></div>
                 </div>
-                <!-- 斷頭機率專用區塊 -->
                 <div class="res-box" style="background: #fde8e8; border-color: #f8b4b4;">
                     <div class="res-label">歷史模擬斷頭機率</div>
                     <div class="res-value col-loss" id="resMarginCall">0.0%</div>
@@ -387,6 +382,10 @@
             
             <h2>存股複利與質押維持率的關聯</h2>
             <p>當投資人選擇使用股票質押來放大資產時，維持率的控管至關重要。本計算機能幫助您模擬在不同年化報酬率下，若將增貸資金持續滾入，您的資產變動情況。這在遇到股災時，能提供極具價值的參考數據，協助您規劃風險緩衝空間。</p>
+
+            <h2>槓桿族的避險清單：蒙地卡羅模擬的功能說明</h2>
+            <p>槓桿投資是一把雙面刃，您以為的高獲利，背後往往隱藏著不可承受的斷頭風險。<br>本工具的「蒙地卡羅模擬」功能，透過 1,000 次隨機情境，模擬真實世界股市的暴漲暴跌，為您的財務韌性進行最客觀的壓力測試。</p>
+            <p>在開啟質押功能之前，這項模擬能讓您預先看見最真實的風險概率。<br>我們認為，投資的真諦不只是追逐報酬，更是要在市場極端情況下依然保持財務的安全。<br>請務必查看您的「歷史模擬斷頭機率」，讓這台計算機成為您在槓桿操作時，最冷靜的理智防線。</p>
         </article>
     </div>
 
@@ -398,7 +397,7 @@
             </div>
             <div class="footer-info">
                 <strong style="color: #34495e;">關於工具：</strong><br>
-                版本：Ver 3.1.0 (壓力測試與動態利率升級版)<br>
+                版本：Ver 3.1.0<br>
                 開發：阿奇 Archie Lab
             </div>
         </div>
@@ -427,11 +426,29 @@ function toggleSidebar() {
     }
 }
 
+/* --- 動態相依鎖定邏輯：蒙地卡羅自動開啟 --- */
+function checkMonteCarloLock() {
+    const isLoanEnabled = document.getElementById('enableLoan').checked;
+    const interestMode = document.getElementById('interestMode').value;
+    const mcCheckbox = document.getElementById('enableMonteCarlo');
+
+    if (isLoanEnabled && (interestMode === 'dynamic' || interestMode === 'stagflation')) {
+        if (!mcCheckbox.checked) {
+            mcCheckbox.checked = true;
+            toggleMonteCarloSettings();
+        }
+        mcCheckbox.disabled = true;
+    } else {
+        mcCheckbox.disabled = false;
+    }
+}
+
 /* --- 開關邏輯 --- */
 function toggleLoanSettings() {
     const isEnabled = document.getElementById('enableLoan').checked;
     document.getElementById('loanSettings').style.display = isEnabled ? 'block' : 'none';
     if(isEnabled) updateYearlyInputs();
+    checkMonteCarloLock();
 }
 
 function toggleMonteCarloSettings() {
@@ -467,6 +484,8 @@ function toggleInterestMode() {
         baseGroup.style.display = 'block'; floorGroup.style.display = 'block'; capGroup.style.display = 'block'; yearlyGroup.style.display = 'none';
         baseLabel.innerText = "基礎利率 (%)";
     }
+    
+    checkMonteCarloLock();
 }
 
 function toggleRatioMode() {
